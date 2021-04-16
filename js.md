@@ -1,7 +1,10 @@
 ### 1.手写promise
 
 ```javascript
-function myPromise(constructor){ let self=this;
+
+//简洁版  无法处理setTimeout异步任务
+function myPromise(constructor){
+  let self=this;
   self.status="pending" //定义状态改变前的初始状态 
   self.value=undefined;//定义状态为resolved的时候的状态 
   self.reason=undefined;//定义状态为rejected的时候的状态 
@@ -350,7 +353,7 @@ ajax(url, 'GET')
 
 ### 节流与防抖
 
-  在页面中如果持续触发一个事件会对性能不利，例如页面滚动、鼠标移动等若持续触发会造成事件冗余，也为页面加载带来负担。节流指的是函数在触发过了规定时间后再执行，若在规定时间内再次触发会重新计时， 再过规定时间后再执行。
+​     在页面中如果持续触发一个事件会对性能不利，例如页面滚动、鼠标移动等若持续触发会造成事件冗余，也为页面加载带来负担。节流指的是函数在触发过了规定时间后再执行，若在规定时间内再次触发会重新计时， 再过规定时间后再执行。
 
 ``` javascript
 function jieliu(fn, wait){
