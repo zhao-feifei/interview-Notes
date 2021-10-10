@@ -1364,5 +1364,24 @@ console.log(sum)
 
 ```
 
+#### Foreach
+
+```javascript
+Array.prototype.myForeach = function (fn, thisArg) {
+  let arr = this
+  for (let i = 0; i < arr.length; i++) {
+    // arr[i] = fn.call(thisArg, arr[i], i, arr)
+    fn.call(thisArg, arr[i], i, arr)
+  }
+  return arr
+}
+let arr = [1, 2, 3, 45, 6]
+let arr1 = arr.myForeach((item) => {
+  console.log(item)
+})
+console.log(arr)
+console.log(arr1)
+```
+
 
 
