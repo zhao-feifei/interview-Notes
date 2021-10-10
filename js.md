@@ -1,4 +1,4 @@
-### 1.手写promise
+### 手写promise
 
 ```javascript
 
@@ -114,59 +114,22 @@ myPromise.prototype.then = function(onResolved, onRejected){
 }
 ```
 
-### 2.手写promise.all  promise.race  promise.or
+### 手写promise.all  promise.race  promise.or
 
 ```javascript
-function promiseAll(promises) {
-  return new Promise(function(resolve, reject) {
-    if(!Array.isArray(promises)){
-        throw new TypeError(`argument must be a array`)
-    }
-    var resolvedCounter = 0;
-    var promiseNum = promises.length;
-    var resolvedResult = [];
-    for (let i = 0; i < promiseNum; i++) {
-      Promise.resolve(promises[i]).then(value=>{
-        resolvedCounter++;
-        resolvedResult[i] = value;
-        if (resolvedCounter == promiseNum) {
-            return resolve(resolvedResult)
-          }
-      },error=>{
-        return reject(error)
-      })
-    }
-  })
-}
 
-// test
-let p1 = new Promise(function (resolve, reject) {
-    setTimeout(function () {
-        resolve(1)
-    }, 1000)
-})
-let p2 = new Promise(function (resolve, reject) {
-    setTimeout(function () {
-        resolve(2)
-    }, 2000)
-})
-let p3 = new Promise(function (resolve, reject) {
-    setTimeout(function () {
-        resolve(3)
-    }, 3000)
-})
-promiseAll([p3, p1, p2]).then(res => {
-    console.log(res) // [3, 1, 2]
-})
-// promise.all
+
+### 简洁版
+
+
 function myPromiseAll(promiseAll) {
     return new Promise((resolve, reject) => {
         if (!Array.isArray(promiseAll)) {
             throw 'promise must be an Array'
         }
-        let resArr = [];
-        let len = promiseAll.length;
-        let count = 0;
+        let resArr = [],
+            len = promiseAll.length,
+            count = 0;
         for (let i = 0; i < len; i++) {
             Promise.resolve(promiseAll[i]).then((value) => {
                 resArr[i] = value;
@@ -190,17 +153,7 @@ myPromiseAll([p1, p3, p2]).then((res) => {
 })
 
 
-// promise.race();
-// 这么简单得益于promise的状态只能改变一次，即resolve和reject都只被能执行一次
-Promise.prototype.myRace = function (promises) {
 
-    return new Promise(function (resolve, reject) {
-        for (let i = 0; i < promises.length; i++) {
-            primises[i].then(resolve, reject)
-        }
-    })
-
-}
 // promise.race();
 function myPromiseRace(promiseRace) {
     return new Promise((resolve, reject) => {
@@ -268,6 +221,27 @@ let p1 = Promise.reject(1);
             console.log('cuowule');
         })
 ```
+
+### Promise 封装异步上传图片
+
+```javascript
+function loadImageAsync(url) {
+    return new Promise((resolve, reject)=>{
+        var image = new Image();
+        image.onload = function() {
+            resolve(image) 
+        };
+        image.onerror = function() {
+            reject(new Error('Could not load image at' + url));
+        };
+        image.src = url;
+     });
+}   
+```
+
+
+
+
 
 ### 手写Ajax
 
@@ -356,76 +330,41 @@ ajax(url, 'GET')
 ​     在页面中如果持续触发一个事件会对性能不利，例如页面滚动、鼠标移动等若持续触发会造成事件冗余，也为页面加载带来负担。节流指的是函数在触发过了规定时间后再执行，若在规定时间内再次触发会重新计时， 再过规定时间后再执行。
 
 ``` javascript
-function jieliu(fn, wait){
-    var timer;
-    if(timer){
-        clearTimeout(timer)
+
+function throttle(fn, wait) {
+  let  pre = new Date();
+  return function() {
+    let context = this;
+    let args = arguments;
+    let now = new  Date();
+    if (now - pre >= wait) {
+      fn.apply(context, args);
+      pre = now;
     }
-    return function(){
-        timer = setTimeout(fn, wait)
-    }
+  }
 }
-function fn(){
-    console.log('防抖')
-}
-window.addEventListen('scroll', jieliu(fn, 1000))
+
 ```
 
 防抖是在规定时间内只会触发一次，可以分为有时间戳和定时器两种。
 
 ``` javascript
-function shijianchuo(fn, wait){
-	var pre = new Date();
-    return function(){
-        var that = this;
-        var args = arguments;
-        var now = new Date();
-        if(now - pre >= wait){
-            fn.apply(that, args);
-        }
-    }
+function debounce(fn, wait) {
+  let timeout = null;
+  return function() {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      fn.call(this, arguments);
+    }, wait);
+  }
 }
-function fn(){
-    console.log('时间戳')
-}
-window.addEventListener('scroll', shijianchuo(fn, 1000));
-```
-
-``` javascript
-function dingshiqi(fn, wait){
-    var timer = null;
-    return function(){
-        var that = this;
-        var args = arguments;
-        if(!timer){
-            timer = setTimerout(function(){
-                fn.apply(that, args);
-                timer = null;
-            }, wait)
-        }
-    }
-}
-function fn(){
-    console.log('定时器')
-}
-window.addEventListener('scroll', dingshiqi(fn, 1000));
 ```
 
 ### 深浅拷贝
 
 ``` javascript
-//浅拷贝的实现 只拷贝对象
-function shallowCope(object){
-    if(!object || typeof object !== 'object') return;
-    //根据object的类型进行判断新建一个数组还是对象
-    let newObject = Array.isArray(object) ? [] : {};
-    for(let k in object){
-        if(object.hasOwnProperty(k)){
-            newObject[k] = object[k];
-        }
-    }
-    return newObject;
-}
+
+
 //深拷贝的实现
 function deepCope(object){
     if(!object || typeof object !== 'object') return;
@@ -452,7 +391,7 @@ Function.prototype.myCall = function(context){
     let args = [...arguments].slice(1),
         result = null;
     //判断context是否传入 若没传入则设为window
-    context = context || window;
+    let  context = context || window;
     //将调用函数设为对象的方法
     context.fn = this;
     result = context.fn(...args);
@@ -465,7 +404,7 @@ Function.prototype.myApply = function(context){
         console.error('type error');
     }
     let result = null;
-    context = context || window;
+    let context = context || window;
     context.fn = this;
     if(arguments[1]){
         result = context.fn(...arguments[1]);
@@ -476,16 +415,15 @@ Function.prototype.myApply = function(context){
     return result;
 }
 //手写bind
-Function.prototype.myBind = function(newObject){
-    if( typeof this !== 'function'){
-        console.error('type error');
+Function.prototype.bind = function(context, ...args) {
+    // context为要改变的执行上下文
+    // ...args为传入bind函数的其余参数
+    return (...newArgs) => {
+        // 这里返回一个新的函数
+        // 通过调用call方法改变this指向并且把老参和新参一并传入
+        return this.call(context, ...args, ...newArgs);
     }
-    var args = [...arguments].slice(1);
-    var that = this;
-    return function(){
-       return that.apply(newObject, args.concat([...arguments]))
-    }
-}
+};
 ```
 
 ### 函数柯里化
@@ -517,23 +455,94 @@ function fn(a,b,c){
 var newCurry = curry(fn, 1);
 newCurry(2);
 newCurry(3);
+
+
+/* 
+柯理化函数含义：是给函数分步传递参数，每次传递部分参数，并返回一个更具体的函数接收剩下的参数，
+这中间可嵌套多层这样的接收部分参数的函数，直至返回最后结果。
+*/
+
+function add(a, b, c, d) {
+  return a + b + c + d;
+}
+
+function currying(fn, ...args) {
+  if (fn.length === args.length) {
+    return fn(...args);
+  } else {
+    return function (...newArgs) {
+      return currying(fn, ...args, ...newArgs);
+    }
+  }
+}
+
+let addSum = currying(add)(1,2);
+console.log(addSum(3)(4)); // 10
+
+//实现add()方法，使计算结果能够满足如下预期:    
+//add(1)(2)(3) = 6;    
+//add(1, 2, 3)(4) = 10;    
+//add(1)(2)(3)(4)(5) = 15;    
+function add() {
+	// 第一次执行时，定义一个数组专门用来存储所有的参数
+	let _args = Array.prototype.slice.call(arguments);
+
+	// 在内部声明一个函数，利用闭包的特性保存_args并收集所有的参数值
+	let _adder = function() {
+	    _args.push(...arguments);
+	    return _adder;
+	};
+
+	// 利用toString隐式转换的特性，当最后执行时隐式转换，并计算最终的值返回
+	_adder.toString = function () {
+	    return _args.reduce(function (a, b) {
+	        return a + b;
+	    });
+	}
+	return _adder;
+}
+
+
+/////////////
+function curry(fn, args) {
+    length = fn.length;
+    args = args || [];
+    return function() {
+        var _args = args.slice(0),
+            arg, i;
+        for (i = 0; i < arguments.length; i++) {
+            arg = arguments[i];
+            _args.push(arg);
+        }
+        if (_args.length < length) {
+            return curry.call(this, fn, _args);
+        }
+        else {
+            return fn.apply(this, _args);
+        }
+    }
+}
+
+
+var fn = curry(function(a, b, c) {
+    console.log([a, b, c]);
+});
+
+fn("a", "b", "c") // ["a", "b", "c"]
+fn("a", "b")("c") // ["a", "b", "c"]
+fn("a")("b")("c") // ["a", "b", "c"]
+fn("a")("b", "c") // ["a", "b", "c"]
 ```
 
 ### setTimeout 实现 setInterval
 
 ``` javascript
-function myInterval(fn, wait){
-    var timer = {
-        flag: true
-    };
-    function interval(){
-        if(timer.flag){
-            fn();
-            setTimeout(interval, wait);
-        }
-    }
-    setTimeout(interval, wait);
-    return timer;
+function myInterval(fn, time) {
+  let context = this;
+  setTimeout(() => {
+    fn.call(context);
+    myInterval(fn, time);
+  }, time);
 }
 ```
 
@@ -603,50 +612,65 @@ function jsonp(url, params, callback){
     //将脚本插入到head中
     document.getElementsByTagName('head')[0].appendChild(myScript);
 }
+
+//没整明白
+
+var newscript = document.createElement('script');
+newscript.src = 'https://www.adb.com?callback=fn'
+document.body.appendChild(newscript);
+function fn(data) {
+  console.log(data);
+}
+
 ```
 
 ### 手写观察者模式
 
 ``` javascript
-class Subject{
-  constructor(name){
-    this.name = name;
-    this.state = '开心的';
-    this.observers = []; // 存储所有的观察者
-  }
-  // 收集所有的观察者
-  attach(observer){
-    this.observers.push(observer);
-  }
-  // 更新被观察者的状态
-  setState(newState){
-    this.state = newState; 
-    this.observers.forEach(observer=>observer.update(this)); // 通知观察值，更新状态
-  }
-}
-// 观察者 例如老师、家长
-class Oberver{
-  constructor(name){
-    this.name = name;
-  }
-  update(student){
-    console.log('当前' + student.name + '学生的状态是' + student.state + ',已经通知了' + this.name);
-  }
+class Sub {
+    constructor(name) {
+        this.name = name;
+        this.obj = [];
+        this.num = 0;
+    }
+
+    on(obj) {
+        this.obj.push(obj);
+    }
+
+    update(newNum) {
+        this.num = newNum;
+        this.emit();
+    }
+    emit() {
+        this.obj.forEach((ob) => {
+            ob.getMessage(this.num);
+        })
+    }
 }
 
-let student = new Subject('小羊');
-let parent = new Oberver('家长');
-let teacher = new Oberver('老师');
+class Obj {
+    constructor(name) {
+        this.name = name;
+    }
+    getMessage(num) {
+        console.log(`顾客${this.name}订购了此商品还剩${num}件`);
+    }
+}
 
-student.attach(parent);
-student.attach(teacher);
 
-student.setState('成绩优秀！');
-// 当前小羊学生的状态是成绩优秀！,已经通知了家长
-// 当前小羊学生的状态是成绩优秀！,已经通知了老师
+
+
+let shop = new Sub('商店');
+let people1 = new Obj('zhangsan');
+let people2 = new Obj('lisi');
+
+
+shop.on(people1);
+shop.on(people2);
+
+shop.update(9);
 ```
-
-###
 
 
 
@@ -685,6 +709,36 @@ class eventEmitter {
         return this;
     }
 }
+
+//版本2
+class EventEmitter {
+  constructor() {
+    this.events = {};
+  }
+  on (eventName, callback) {
+    if(!this.events[eventName]) {
+      this.events[eventName] = [callback];
+    } else {
+      this.events[eventName].push(callback);
+    }
+  }
+
+  emit(eventName, ...args) {
+    this.events[eventName].forEach(fn => fn.apply(this, args));
+  }
+
+  once(eventName, callback) {
+    const fn = () => {
+      callback();
+      this.remove(eventName, fn);
+    }
+    this.on(eventName, fn)
+  }
+
+  remove(eventName, callback) {
+    this.events[eventName] = this.events[eventName].filter(fn => fn != callback);
+  }
+}
 ```
 
 ### 懒加载
@@ -716,116 +770,35 @@ function lazyload() {
 }
 ```
 
-### 模拟实现new
+
+
+### filter
 
 ``` JavaScript
-function create() {
-    // 创建一个空的对象
-    console.log(arguments);
-    var obj = new Object(),
-        // 删除并拿到arguments的第一项就是我们的构造函数
-        Con = [].shift.apply(arguments);
-    console.log(Con);
-    // 链接到原型，obj 可以访问到构造函数原型中的属性
-    obj.__proto__ = Con.prototype;
-    // 绑定 this 实现继承，obj 可以访问到构造函数中的属性
-    var ret = Con.apply(obj, arguments);
-    // 优先返回构造函数返回的对象
-    return typeof ret === 'object' ? ret : obj;
-};
-
-function Car(color) {
-    this.color = color;
-}
-Car.prototype.start = function() {
-    console.log(this.color + " car start");
-}
-var car = create(Car, "black");
-car.color;
-// black
-car.start();
-// black car start
-```
-
-### 数组的三种方法
-
-``` JavaScript
-// filter
-Array.prototype.filter1 = function(fn) {
-    let newArray = [];
-    for (let i = 0; i < this.length; i++) {
-        if (fn(this[i])) {
-            newArray.push(this[i]);
-        }
+//返回一个包含  所有通过函数筛选   的元素所组成的数组
+Array.prototype.myFilter = function (fn, thisArr) {
+  if (this === undefined) {
+    throw new Error('this is null or not undefined')
+  }
+  if (Object.prototype.toString.call(fn) !== '[object Function]') {
+    throw new Error(fn + ' is not a function')
+  }
+  let filterArr = this
+  let filterRes = []
+  for (let i = 0; i < filterArr.length; i++) {
+    if (fn.call(thisArr, filterArr[i], i, filterArr)) {
+      filterRes.push(filterArr[i])
     }
-    return newArray
+  }
+  return filterRes
 }
 let arr = [1, 2, 3, 45, 6]
-let arr1 = arr.filter1((item) =>
-    item >= 6
-)
-console.log(arr1);
+let arr1 = arr.myFilter((item) => item >= 6)
+console.log(arr1)
 
-
-// map
-Array.prototype.map1 = function(fn) {
-    let newArray = [];
-    for (let i = 0; i < this.length; i++) {
-        let key = fn(this[i]);
-        newArray.push(key);
-    }
-    return newArray;
-}
-
-
-
-let arr = [1, 2, 3, 4];
-let arr1 = arr.map1((item) => {
-    return item * 2;
-})
-console.log(arr1);
-
-// reduce 无初始值
-Array.prototype.reduce1 = function(fn) {
-    let newVal = this[0];
-    for (let i = 1; i < this.length; i++) {
-        newVal = fn(newVal, this[i], i, arr);
-    }
-    return newVal
-}
-let arr = [1, 2, 3, 4, 5]
-let resMult = arr.reduce1((value, item, i, arr) => { //value为累计值，item当前值，i当前值索引，arr当前操作的数组
-    // console.log(value, item, i, arr)
-    return value * item
-})
-let resAdd = arr.reduce1((value, item, i, arr) => {
-    // console.log(value, item, i, arr)
-    return value + item
-})
-console.log(resMult, resAdd) // 120 15
-
-//reduce 有初始值
-
-Array.prototype.reduce2 = function(fn, ini) {
-    let key = ini ? ini : this[0];
-    for (let i = ini ? 0 : 1; i < this.length; i++) {
-        key = fn(key, this[i], i, arr);
-    }
-    return key;
-}
-
-
-let arr = [10, 2, 3, 4, 5];
-let arr2 = arr.reduce2((val, item, i, arr) => {
-    return val + item;
-}, 10)
-let arr3 = arr.reduce2((val, item, i, arr) => {
-    return val * item;
-})
-console.log(arr2, arr3);
 ```
 
-### 数组降维
+### 数组降维,数组降维
 
 ``` JavaScript
 //数组降维  去掉null 【】 和 undefined（字节笔试题）
@@ -871,6 +844,26 @@ let array3 = res.myFlatten();
 console.log(array);
 console.log(array2);
 console.log(array3);
+///////  另一种写法
+const myFlat = (arr) => {
+  let newArr = [];
+  let cycleArray = (arr) => {
+    for(let i = 0; i < arr.length; i++) {
+      let item = arr[i];
+      if (Array.isArray(item)) {
+        cycleArray(item);
+        continue;
+      } else {
+        newArr.push(item);
+      }
+    }
+  }
+  cycleArray(arr);
+  return newArr;
+}
+
+myFlat(arr); // [1, 2, 2, 3, 4, 5, 5, 6, 7, 8, 9, 11, 12, 12, 13, 14, 10]
+
 ```
 
 ### 实现千位分隔符
@@ -907,6 +900,11 @@ function format(num) {
     console.log(str);
 
     return str.split('').reverse().join('');
+}
+
+//方法三
+function thousandth(str) {
+  return str.replace(/\d(?=(?:\d{3})+(?:\.\d+|$))/g, '$&,');
 }
 ```
 
@@ -1017,4 +1015,354 @@ em.on("task", sayLove);
 
 em.emit("task");
 ```
+
+### 数组扁平化
+
+```javascript
+//循环+递归
+function flattenDeep(arr){
+	let newArr=[];
+	for(let i=0;i<arr.length;i++){
+		if(Array.isArray(arr[i])){
+			newArr.push.apply(newArr,flattenDeep(arr[i]));
+		}else{
+			newArr.push(arr[i]);
+		}
+	}
+	return newArr;
+}
+//另一个版本  无误
+var flatten = function(arr) {
+  let res = [];
+  for (let i = 0; i < arr.length; i++) {
+    if (Array.isArray(arr[i])) {
+      res = res.concat(flatten(arr[i]))
+    } else {
+      res.push(arr[i])
+    }
+  }
+  return res;
+}
+console.log(flatten([1,[1,2,[2,4]],3,5]));  // [1, 1, 2, 2, 4, 3, 5]
+
+//apply()+some()
+function flattenDeep(arr){
+	while(arr.some(item=>Array.isArray(item))){
+		arr=[].concat.apply([],arr);
+	}
+	return arr;
+}
+//扩展运算符(...)
+function flattenDeep(arr){
+	while(arr.some(item=>Array.isArray(item))){
+		arr=[].concat(...arr);
+	}
+	return arr;
+}
+//reduce() 
+function flattenDeep(arr){
+	return arr.reduce((prev, next)=>{
+		return prev.concat(Array.isArray(next) ? flattenDeep(next) : next);
+	},[])
+}
+```
+
+### 实现Instanceof
+
+```javascript
+function myInstanceof(left, right){
+     if(typeof left !== 'object' || left == null)  return false;
+     let proto = Object.getPrototypeOf(left);
+     while(true){
+        if(proto == null)  return false;
+        if(proto === right.prototype)  return true;
+        proto = Object.getPrototypeOf(proto); 
+     }
+ }
+```
+
+### Map
+
+
+
+```javascript
+
+Array.prototype.map = function(fn) {
+    let newArray = [];
+    for (let i = 0; i < this.length; i++) {
+        newArray.push(fn(this[i]));
+    }
+    return newArray;
+}
+```
+
+#### 
+
+### Object.create
+
+```javascript
+Object.create() = function create(prototype) {
+  // 排除传入的对象是 null 和 非object的情况
+	if (prototype === null || typeof prototype !== 'object') {
+    throw new TypeError(`Object prototype may only be an Object: ${prototype}`);
+	}
+  // 让空对象的 __proto__指向 传进来的 对象(prototype)
+  // 目标 {}.__proto__ = prototype
+  function Temp() {};
+  Temp.prototype = prototype;
+  return new Temp;
+}
+
+
+//写法2
+function create(proto) {
+    function Fn() {};
+    Fn.prototype = proto;
+    Fn.prototype.constructor = Fn;
+    return new Fn();
+}
+let demo = {
+    c : '123'
+}
+let cc = Object.create(demo)
+
+```
+
+
+
+### ES5实现数组reduce
+
+```javascript
+Array.prototype.myReduce = function (callback, initialValue) {
+  const arr = this
+  let acc = typeof initialValue === 'undefined' ? arr[0] : initialValue
+  let startIndex = typeof initialValue === 'undefined' ? 1 : 0
+  for (let i = startIndex; i < arr.length; i++) {
+    let curr = arr[i]
+    acc = callback(acc, curr, i, arr)
+  }
+  return acc
+}
+
+let Arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+const sum = Arr.myReduce((pre, cur) => {
+  return pre + cur
+}, 10)
+console.log(sum)
+
+
+
+```
+
+### 实现New
+
+```javascript
+function myNew (fun, ...args) {
+  let obj = {};
+  obj.__proto__ = fun.prototype;
+  let res = fun.apply(obj, args);
+  return res instanceof Object ? res : obj;
+}
+
+function Animal(name) {
+  this.name = name;
+}
+
+let animal = myNew(Animal, 'dog');
+console.log(animal.name)  // dog
+```
+
+### 实现Trim(去除字符串的首尾空格)
+
+```javascript
+//正则
+function myTrim1(str){
+    return str.replace(/^\s+|\s+$/g,'')
+}
+```
+
+### 数组乱序(洗牌算法)
+
+```javascript
+function shuffle(a) {
+    for (let i = a.length; i; i--) {
+        let j = Math.floor(Math.random() * i);
+        [a[i - 1], a[j]] = [a[j], a[i - 1]];
+    }
+    return a;
+}
+```
+
+
+
+
+
+### 排序相关
+
+```javascript
+//堆排序
+
+
+function heapSort(array) {
+  // 初始化大顶堆，从第一个非叶子结点开始
+  for (let i = Math.floor(array.length / 2 - 1); i >= 0; i--) {
+    adjustHeap(array, i, array.length);
+  }
+  // 排序，每一次for循环找出一个当前最大值，数组长度减一
+  for (let j = array.length - 1; j > 0; j--) {
+    // 根节点与最后一个节点交换
+    const temp = array[0];
+    array[0] = array[j];
+    array[j] = temp;
+    adjustHeap(array, 0, j);
+  }
+  return array;
+}
+
+//插入排序
+function insertionSort(array) {
+  for (let i = 1; i < array.length; i++) {
+    let j = i - 1;
+    const temp = array[i];
+    while (j >= 0 && array[j] > temp) {
+      array[j + 1] = array[j];
+      j--;
+    }
+    array[j + 1] = temp;
+  }
+  return array;
+}
+
+
+//归并排序
+function merge(left, right) {
+  let res = [];
+  while(left.length > 0 && right.length > 0) {
+    if (left[0] < right[0]) {
+      res.push(left.shift());
+    } else {
+      res.push(right.shift());
+    }
+  }
+  return res.concat(left).concat(right);
+}
+
+function mergeSort(arr) {
+  if (arr.length == 1) return arr;
+  var middle = Math.floor(arr.length / 2);
+  var left = arr.slice(0, middle);
+  var right = arr.slice(middle);
+  return merge(mergeSort(left), mergeSort(right));
+}
+
+//快速排序另一版本
+function quicksort(arr) {
+  if (arr.length <= 1) return arr;
+  let pivotIndex = arr.length >> 1;
+  let pivot = arr.splice(pivotIndex, 1)[0];
+  let left = [];
+  let right = [];
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] <= pivot)  {
+      left.push(arr[i]);
+    } else {
+      right.push(arr[i]);
+    }
+  }
+  return quicksort(left).concat(pivot, quicksort(right));
+
+}
+//选择排序
+function selectionSort(array) {
+  for (let i = 0; i < array.length; i++) {
+    let minIndex = i;
+    for (let j = i + 1; j < array.length; j++) {
+      if (array[j] < array[minIndex]) {
+        minIndex = j;
+      }
+    }
+    const temp = array[i];
+    array[i] = array[minIndex];
+    array[minIndex] = temp;
+  }
+  return array;
+}
+
+//希尔排序
+function shellSort(array) {
+  const len = array.length;
+  let gap =  Math.floor(len / 2);
+  for (gap; gap > 0; gap = Math.floor(gap / 2)) {
+    for (let i = gap; i < len; i++) {
+      let j = i - gap;
+      const temp = array[i];
+      while (j >= 0 && array[j] > temp) {
+        array[j + gap] = array[j];
+        j -= gap;
+      }
+      array[j + gap] = temp;
+    }
+  }
+  return array;
+}
+
+
+
+```
+
+## 数组API
+
+#### Map
+
+```
+
+```
+
+#### Filter
+
+```javascript
+Array.prototype.myFilter = function (fn, thisArr) {
+  if (this === undefined) {
+    throw new Error('this is null or not undefined')
+  }
+  if (Object.prototype.toString.call(fn) !== '[object Function]') {
+    throw new Error(fn + ' is not a function')
+  }
+  let filterArr = this
+  let filterRes = []
+  for (let i = 0; i < filterArr.length; i++) {
+    if (fn.call(thisArr, filterArr[i], i, filterArr)) {
+      filterRes.push(filterArr[i])
+    }
+  }
+  return filterRes
+}
+let arr = [1, 2, 3, 45, 6]
+let arr1 = arr.myFilter((item) => item >= 6)
+console.log(arr1)
+```
+
+#### Reduce
+
+```javascript
+Array.prototype.myReduce = function (callback, initialValue) {
+  const arr = this
+  let acc = typeof initialValue === 'undefined' ? arr[0] : initialValue
+  let startIndex = typeof initialValue === 'undefined' ? 1 : 0
+  for (let i = startIndex; i < arr.length; i++) {
+    let curr = arr[i]
+    acc = callback(acc, curr, i, arr)
+  }
+  return acc
+}
+
+let Arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+const sum = Arr.myReduce((pre, cur) => {
+  return pre + cur
+}, 10)
+console.log(sum)
+
+```
+
+
 
