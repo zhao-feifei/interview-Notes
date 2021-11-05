@@ -1383,5 +1383,76 @@ console.log(arr)
 console.log(arr1)
 ```
 
+#### Some && Every
+
+```javascript
+
+Array.prototype.mySome = function (fn, thisArg) {
+  if (this === undefined) {
+    throw new Error('this is null or not undefined')
+  }
+  if (Object.prototype.toString.call(fn) !== '[object Function]') {
+    throw new Error(fn + ' is not a function')
+  }
+  let someArr = this
+  for (let i = 0; i < someArr.length; i++) {
+    if (fn.call(thisArg, someArr[i], i, someArr)) {
+      return true
+    }
+  }
+  return false
+}
+let arr = [1, 2, 3, 45, 6]
+let res = arr.mySome((item) => {
+  return item >= 49
+})
+console.log(res)
+
+
+
+//多了一个取反   并且true和false互换位置
+Array.prototype.myEvery = function (fn, thisArg) {
+  if (this === undefined) {
+    throw new Error('this is null or not undefined')
+  }
+  if (Object.prototype.toString.call(fn) !== '[object Function]') {
+    throw new Error(fn + ' is not a function')
+  }
+  let everyArr = this
+  for (let i = 0; i < everyArr.length; i++) {
+    if (!fn.call(thisArg, everyArr[i], i, everyArr)) {
+      return false
+    }
+  }
+  return true
+}
+let arr = [1, 2, 3, 45, 6]
+let res = arr.myEvery((item) => {
+  return item > 0
+})
+console.log(res)
+
+
+```
+
+#### Includes && IndexOf
+
+```javascript
+Array.prototype.myIncludes = function (searchElement, formIndex = 0) {
+  let includesEle = this
+  let len = includesEle.length
+  if (searchElement.length >= len || !len) return false
+  for (let i = formIndex; i < len; i++) {
+    if (includesEle[i] === searchElement) {
+      return true
+    }
+  }
+  return false
+}
+var str = 'Hello world, welcome to the Runoob。'
+console.log(str.includes('world'))
+
+```
+
 
 
