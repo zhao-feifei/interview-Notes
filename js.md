@@ -325,7 +325,7 @@ ajax(url, 'GET')
     .catch(err => console.error(err))
 ```
 
-### 节流与防抖
+## 节流与防抖
 
 ​     在页面中如果持续触发一个事件会对性能不利，例如页面滚动、鼠标移动等若持续触发会造成事件冗余，也为页面加载带来负担。节流指的是函数在触发过了规定时间后再执行，若在规定时间内再次触发会重新计时， 再过规定时间后再执行。
 
@@ -360,12 +360,12 @@ function debounce(fn, wait) {
 }
 ```
 
-### 深浅拷贝
+## 深拷贝
 
 ``` javascript
 
 
-//深拷贝的实现
+//深拷贝的实现,循环引用会出错
 function deepCope(object){
     if(!object || typeof object !== 'object') return;
     let newObject = Array.isArray(object) ? [] : {};
@@ -377,9 +377,78 @@ function deepCope(object){
     }
     return newObject;
 }
+
+//解决了循环引用的问题
+function deepClone3(target, map = new Map()) {
+  const type = getType(target)
+  if (type==='Object' || type==='Array') {
+     // 从map容器取对应的clone对象
+    let cloneTarget = map.get(target)
+    // 如果有, 直接返回这个clone对象
+    if (cloneTarget) {
+      return cloneTarget
+    }
+    cloneTarget = type==='Array' ? [] : {}
+    // 将clone产生的对象保存到map容器
+    map.set(target, cloneTarget)
+    for (const key in target) {
+      if (target.hasOwnProperty(key)) {
+        cloneTarget[key] = deepClone3(target[key], map)
+      }
+    }
+    return cloneTarget
+  } else {
+    return target
+  }
+}
 ```
 
-### 手写call apply bind
+## 带委托的通用事件监听函数
+
+```javascript
+/* 
+绑定事件监听的通用函数(不带委托)
+*/
+function bindEvent1 (ele, type, fn) {
+  ele.addEventListener(type, fn)
+}
+
+/* 
+绑定事件监听的通用函数(带委托)
+*/
+function bindEvent2(ele, type, fn, selector) {
+
+  ele.addEventListener(type, event => {
+    // 得到发生事件的目标
+    const target = event.target
+    if (selector) {
+      // 如果元素被指定的选择器字符串选择, 返回true; 否则返回false。
+      if (target.matches(selector)) {
+        // 委托绑定调用
+        fn.call(target, event)
+      } 
+    } else {
+      // 普通绑定调用
+      fn.call(ele, event)
+      // fn(event) // this不对
+    }
+  })
+}
+
+
+<ul>
+   <span>
+    <li>
+    <li>
+</ul>
+    
+bindEvent2(ul, 'click', (event) => {}, 'li')
+bindEvent2(ul, 'click', (event) => {})
+```
+
+
+
+## **手写call apply bind**
 
 ``` javascript
 //手写call
@@ -392,7 +461,7 @@ Function.prototype.myCall = function(context){
         result = null;
     //判断context是否传入 若没传入则设为window
     let  context = context || window;
-    //将调用函数设为对象的方法
+    //将函数的调用者设为对象的方法  
     context.fn = this;
     result = context.fn(...args);
     delete context.fn;
@@ -674,71 +743,10 @@ shop.update(9);
 
 
 
-### EventEmitter 实现
+### 
 
 ``` javascript
-class eventEmitter {
-    constructor(){
-        this.events = {}
-    }
-    on(event, callback){
-        let callbacks = this.events[event] || [];
-        callbacks.push(callback);
-        this.events[event] = callbacks;
-        return this;
-    }
-    emit(event, ...args){
-        let callbacks = this.events[event];
-        callbacks.forEach(fn => {
-            fn(...args);
-        })
-        return this;
-    }
-    off(event, callback){
-        let callbacks = this.events[event];
-        callbacks = callbacks.filter(fn => return fn !== callback);
-        this.events[event] = callbacks;
-        return this;
-    }
-    once(event, callback){
-        let wrapFun = function(...args){
-            callback(...args);
-            this.off(wrapFun);
-        }
-        this.on(event, wrapFun);
-        return this;
-    }
-}
 
-//版本2
-class EventEmitter {
-  constructor() {
-    this.events = {};
-  }
-  on (eventName, callback) {
-    if(!this.events[eventName]) {
-      this.events[eventName] = [callback];
-    } else {
-      this.events[eventName].push(callback);
-    }
-  }
-
-  emit(eventName, ...args) {
-    this.events[eventName].forEach(fn => fn.apply(this, args));
-  }
-
-  once(eventName, callback) {
-    const fn = () => {
-      callback();
-      this.remove(eventName, fn);
-    }
-    this.on(eventName, fn)
-  }
-
-  remove(eventName, callback) {
-    this.events[eventName] = this.events[eventName].filter(fn => fn != callback);
-  }
-}
 ```
 
 ### 懒加载
@@ -984,53 +992,63 @@ class EventEmitter {
   constructor() {
     this.events = {};
   }
-  // 订阅事件
-  on(eventName, callback) {
-    if (!this.events[eventName]) {
-      this.events[eventName] = [callback];
+  // 实现订阅
+  on(type, callBack) {
+    if (!this.events[type]) {
+      this.events[type] = [callBack];
     } else {
-      this.events[eventName].push(callback);
+      this.events[type].push(callBack);
     }
   }
+  // 删除订阅
+  off(type, callBack) {
+    if (!this.events[type]) return;
+    this.events[type] = this.events[type].filter((item) => {
+      return item !== callBack;
+    });
+  }
+  // 只执行一次订阅事件
+  once(type, callBack) {
+    function fn() {
+      callBack();
+      this.off(type, fn);
+    }
+    this.on(type, fn);
+  }
   // 触发事件
-  emit(eventName) {
-    this.events[eventName] && this.events[eventName].forEach(cb => cb());
+  emit(type, ...rest) {
+    this.events[type] &&
+      this.events[type].forEach((fn) => fn.apply(this, rest));
   }
 }
+// 使用如下
+// const event = new EventEmitter();
 
-let em = new EventEmitter();
+// const handle = (...rest) => {
+//   console.log(rest);
+// };
 
-function workDay() {
-  console.log("每天工作");
-}
-function makeMoney() {
-  console.log("赚100万");
-}
-function sayLove() {
-  console.log("找到另一伴");
-}
-em.on("task", workDay);
-em.on("task", makeMoney);
-em.on("task", sayLove);
+// event.on("click", handle);
 
-em.emit("task");
+// event.emit("click", 1, 2, 3, 4);
+
+// event.off("click", handle);
+
+// event.emit("click", 1, 2);
+
+// event.once("dbClick", () => {
+//   console.log(123456);
+// });
+// event.emit("dbClick");
+// event.emit("dbClick");
+
+
 ```
 
-### 数组扁平化
+## 数组扁平化
 
 ```javascript
-//循环+递归
-function flattenDeep(arr){
-	let newArr=[];
-	for(let i=0;i<arr.length;i++){
-		if(Array.isArray(arr[i])){
-			newArr.push.apply(newArr,flattenDeep(arr[i]));
-		}else{
-			newArr.push(arr[i]);
-		}
-	}
-	return newArr;
-}
+
 //另一个版本  无误
 var flatten = function(arr) {
   let res = [];
@@ -1045,13 +1063,6 @@ var flatten = function(arr) {
 }
 console.log(flatten([1,[1,2,[2,4]],3,5]));  // [1, 1, 2, 2, 4, 3, 5]
 
-//apply()+some()
-function flattenDeep(arr){
-	while(arr.some(item=>Array.isArray(item))){
-		arr=[].concat.apply([],arr);
-	}
-	return arr;
-}
 //扩展运算符(...)
 function flattenDeep(arr){
 	while(arr.some(item=>Array.isArray(item))){
@@ -1067,18 +1078,31 @@ function flattenDeep(arr){
 }
 ```
 
-### 实现Instanceof
+## 实现Instanceof
 
 ```javascript
-function myInstanceof(left, right){
-     if(typeof left !== 'object' || left == null)  return false;
-     let proto = Object.getPrototypeOf(left);
-     while(true){
-        if(proto == null)  return false;
-        if(proto === right.prototype)  return true;
-        proto = Object.getPrototypeOf(proto); 
-     }
- }
+/* 
+自定义instanceof工具函数: 
+  语法: myInstanceOf(obj, Type)
+  功能: 判断obj是否是Type类型的实例
+  实现: Type的原型对象是否是obj的原型链上的某个对象, 如果是返回true, 否则返回false
+*/
+function myInstanceOf(obj, Type) {
+  // 得到原型对象
+  let protoObj = obj.__proto__
+
+  // 只要原型对象存在
+  while(protoObj) {
+    // 如果原型对象是Type的原型对象, 返回true
+    if (protoObj === Type.prototype) {
+      return true
+    }
+    // 指定原型对象的原型对象
+    protoObj = protoObj.__proto__
+  }
+
+  return false
+}
 ```
 
 ### Map
@@ -1154,22 +1178,29 @@ console.log(sum)
 
 ```
 
-### 实现New
+## 实现New
 
 ```javascript
-function myNew (fun, ...args) {
-  let obj = {};
-  obj.__proto__ = fun.prototype;
-  let res = fun.apply(obj, args);
-  return res instanceof Object ? res : obj;
+/* 
+自定义new工具函数
+  语法: newInstance(Fn, ...args)
+  功能: 创建Fn构造函数的实例对象
+  实现: 创建空对象obj, 调用Fn指定this为obj, 返回obj
+*/
+function newInstance(Fn, ...args) {
+  // 创建一个新的对象
+  const obj = {}
+  // 执行构造函数
+  const result = Fn.apply(obj, args) // 相当于: obj.Fn()
+  // 如果构造函数执行的结果是对象, 返回这个对象
+  if (result instanceof Object) {
+    return result
+  }
+  // 如果不是, 返回新创建的对象
+  obj.__proto__.constructor = Fn // 让原型对象的构造器属性指向Fn
+  
+  return obj
 }
-
-function Animal(name) {
-  this.name = name;
-}
-
-let animal = myNew(Animal, 'dog');
-console.log(animal.name)  // dog
 ```
 
 ### 实现Trim(去除字符串的首尾空格)
