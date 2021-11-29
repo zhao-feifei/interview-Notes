@@ -289,500 +289,7 @@ function getJSON(url) {
 
 ​                                        
 
-### 手写Ajax
-
-``` javascript
-function ajax(options){
-   //设置默认对象 
-	var defaults = {
-        type: 'get',
-        url: '',
-        data: {},
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        success: function(){},
-        error: function(){}
-    };
-    //将传入参数对象与默认对象合并
-    Object.assign(defaults, options);
-    var params = '';
-    for(var attr in defaults.data){
-        params += attr + '=' + defaults.data[attr] + '&';
-    }
-    params = params.substr(0, params.length);
-    if(defaults.type == 'get'){
-        default.url = default.url + '?' + params;
-    }
-    var xhr = new XMLHTTPRequest();
-    xhr.open(defaults.type, defaults.url);
-    if(defaults.type == 'post'){
-        var contentType = defaults.headers['Content-Type'];
-        xhr.setResquestHeader('Content-Type', contentType);
-        if(contentType == 'application/json'){
-            xhr.send(JSON.stringify(defaults.data));
-        } else {
-            xhr.send(params);
-        }    
-    } else {
-        xhr.send();
-    }
-    xhr.onload = function(){
-        var contentType = xhr.getResquestHeader('Content-Type');
-        var responseText = xhr.responseText;
-        if(contentType.includes('application/json')){
-            responseText = JSON.parse(responseText);
-        }
-        if(xhr.status == 200){
-            defaults.success(responseText, xhr);
-        } else {
-            defaults.error(responseText, xhr);
-        }
-    }
-}
-
-
-//promise 实现Ajax
-function ajax(url, method, data) {
-    const p = new Promise((res, rej) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState == 4) {
-                if (xhr.status == 200) {
-                    res(
-                        JSON.parse(xhr.responseText)
-                    )
-                } else if (xhr.status === 404 || xhr.status === 500) {
-                    rej(
-                        new Errow('404 not found')
-                    )
-                }
-            }
-        }
-        xhr.send(data);
-    })
-    return p;
-}
-
-const url = './data/test.json'
-ajax(url, 'GET')
-    .then(res => console.log(res))
-    .catch(err => console.error(err))
-```
-
 ## 
-
-
-
-``` javascript
-
-
-```
-
-防抖是在规定时间内只会触发一次，可以分为有时间戳和定时器两种。
-
-``` javascript
-
-```
-
-## 深拷贝
-
-``` javascript
-
-
-```
-
-## 带委托的通用事件监听函数
-
-```javascript
-/* 
-绑定事件监听的通用函数(不带委托)
-*/
-function bindEvent1 (ele, type, fn) {
-  ele.addEventListener(type, fn)
-}
-
-/* 
-绑定事件监听的通用函数(带委托)
-*/
-function bindEvent2(ele, type, fn, selector) {
-
-  ele.addEventListener(type, event => {
-    // 得到发生事件的目标
-    const target = event.target
-    if (selector) {
-      // 如果元素被指定的选择器字符串选择, 返回true; 否则返回false。
-      if (target.matches(selector)) {
-        // 委托绑定调用
-        fn.call(target, event)
-      } 
-    } else {
-      // 普通绑定调用
-      fn.call(ele, event)
-      // fn(event) // this不对
-    }
-  })
-}
-
-
-<ul>
-   <span>
-    <li>
-    <li>
-</ul>
-    
-bindEvent2(ul, 'click', (event) => {}, 'li')
-bindEvent2(ul, 'click', (event) => {})
-```
-
-
-
-## ****
-
-``` javascript
-
-```
-
-
-
-``` javascript
-
-```
-
-### setTimeout 实现 setInterval
-
-``` javascript
-function myInterval(fn, time) {
-  let context = this;
-  setTimeout(() => {
-    fn.call(context);
-    myInterval(fn, time);
-  }, time);
-}
-```
-
-### 
-
-```javascript
-
-```
-
-### 闭包实现每隔一秒打印 1,2,3,4
-
-``` javascript
-for(let i = 1; i <= 4; i++){
-    setTimeout(function(){
-        console.log(i)
-    }, i*1000)
-}
-
-for(var i = 1; i <=4; i++){
-    (function(j){
-        setTimeout(function(){
-            console.log(j)
-        }, j*1000)
-    })(i)
-}
-```
-
-### 手写jsonp
-
-
-
-``` javascript
-function jsonp(url, params, callback){
-    //首先判断url本身是否带有参数 即是否带有？
-    queryString = url.indexOf('?') === '-1' ? '?' : '&';
-    for(var k in params){
-        if(params.hanOwnProperty(k)){
-            queryString += k + '=' + params[k];
-        }
-    }
-    //定义一个随机的函数名 添加到参数中
-    var randomName = Math.random().toString().replace('.', '');
-    var myFunction = 'myFunction' + randomName;
-    queryString += 'callback' + '=' + myFunction;
-    url += queryString;
-    //动态创建script标签
-    var myScript = document.createElement('script');
-    myScript.src = url;
-    window[myFunction] = function(){
-        callback(...arguments);
-        //删除这个动态脚本
-        doucment.getElementsByTagName('head')[0].removeChild(myScript);
-    };
-    //将脚本插入到head中
-    document.getElementsByTagName('head')[0].appendChild(myScript);
-}
-
-//没整明白
-
-var newscript = document.createElement('script');
-newscript.src = 'https://www.adb.com?callback=fn'
-document.body.appendChild(newscript);
-function fn(data) {
-  console.log(data);
-}
-
-```
-
-### 手写观察者模式
-
-``` javascript
-class Sub {
-    constructor(name) {
-        this.name = name;
-        this.obj = [];
-        this.num = 0;
-    }
-
-    on(obj) {
-        this.obj.push(obj);
-    }
-
-    update(newNum) {
-        this.num = newNum;
-        this.emit();
-    }
-    emit() {
-        this.obj.forEach((ob) => {
-            ob.getMessage(this.num);
-        })
-    }
-}
-
-class Obj {
-    constructor(name) {
-        this.name = name;
-    }
-    getMessage(num) {
-        console.log(`顾客${this.name}订购了此商品还剩${num}件`);
-    }
-}
-
-
-
-
-let shop = new Sub('商店');
-let people1 = new Obj('zhangsan');
-let people2 = new Obj('lisi');
-
-
-shop.on(people1);
-shop.on(people2);
-
-shop.update(9);
-```
-
-
-
-### 
-
-``` javascript
-
-```
-
-### 懒加载
-
-(1).将需要懒加载的img标签的src设置缩略图或者不设置src，这里的占位图可以是缺省图，loading图；
-(2).判断该img标签是否在浏览器可视区域，如果在可视区域，则将真实的图片url设置到img标签的src属性；
-(3).用户滚动浏览器，遍历需要懒加载的标签，根据步骤2判断并执行；
-
-``` JavaScript
-let imgs = document.getElementTageName('img')
-let num = imgs.length
-let n = 0; // 存储图片加载到的位置，避免每次都从第一张图片开始遍历
-
-function lazyload() {
-
-    let seeHeight = document.documentElement.clientHeight // 可见区域高度
-    let scrollTop = document.documentElement.scrollTop || document.body.scrollTop //滚动条距离顶部高度
-    for (let i = n; i < num; i++) {
-
-        if (imgs[i].offsetTop < seeHeight + scrollTop) {
-            if (imgs[i].getAttribute('src') === 'default.jpg') {
-                imgs[i].src = img[i].getAttribute('data-src')
-            }
-            n = i+1
-        }
-
-    }
-
-}
-```
-
-
-
-### 
-
-### 
-
-``` JavaScript
-
-
-```
-
-### 实现千位分隔符
-
-``` JavaScript
-// 方法一：
-// function format(num) {
-//     let reg = /(\d{1,3})(?=(\d{3})+$)/g
-//     return (num + '').replace(reg, '$&,');
-// }
-
-console.log(format(98765321));
-
-//正则表达式 \d{1,3}(?=(\d{3})+$)  表示前面有1~3个数字，后面的至少由一组3个数字结尾。
-
-//?=表示正向引用，可以作为匹配的条件，但匹配到的内容不获取，并且作为下一次查询的开始。
-
-//$& 表示与正则表达式相匹配的内容，具体的使用可以查看字符串replace()方法的
-
-//replace是字符串的方法 需要把num转成字符串 (num + '')
-
-
-// 方法二：
-function format(num) {
-    var num = num + '';
-    var str = '';
-    for (let i = num.length - 1, j = 1; i >= 0; i--, j++) {
-        if (j % 3 == 0 && i != 0) {
-            str += num[i] + ','
-            continue;
-        }
-        str += num[i];
-    }
-    console.log(str);
-
-    return str.split('').reverse().join('');
-}
-
-//方法三
-function thousandth(str) {
-  return str.replace(/\d(?=(?:\d{3})+(?:\.\d+|$))/g, '$&,');
-}
-```
-
-### 
-
-``` JavaScript
-	
-```
-
-### 实现sleep
-
-``` JavaScript
-function sleep(time) {
-  return new Promise(reslove => setTimeout(reslove, time));
-}
-function say(name) {
-  console.log(`hello ${name}`);
-}
-
-async function task() {
-  await sleep(3000);
-  say('Chocolate');
-  say('Yang');
-}
-
-task();		
-```
-
-### 手写发布订阅
-
-```JavaScript
-class EventEmitter {
-  constructor() {
-    this.events = {};
-  }
-  // 实现订阅
-  on(type, callBack) {
-    if (!this.events[type]) {
-      this.events[type] = [callBack];
-    } else {
-      this.events[type].push(callBack);
-    }
-  }
-  // 删除订阅
-  off(type, callBack) {
-    if (!this.events[type]) return;
-    this.events[type] = this.events[type].filter((item) => {
-      return item !== callBack;
-    });
-  }
-  // 只执行一次订阅事件
-  once(type, callBack) {
-    function fn() {
-      callBack();
-      this.off(type, fn);
-    }
-    this.on(type, fn);
-  }
-  // 触发事件
-  emit(type, ...rest) {
-    this.events[type] &&
-      this.events[type].forEach((fn) => fn.apply(this, rest));
-  }
-}
-// 使用如下
-// const event = new EventEmitter();
-
-// const handle = (...rest) => {
-//   console.log(rest);
-// };
-
-// event.on("click", handle);
-
-// event.emit("click", 1, 2, 3, 4);
-
-// event.off("click", handle);
-
-// event.emit("click", 1, 2);
-
-// event.once("dbClick", () => {
-//   console.log(123456);
-// });
-// event.emit("dbClick");
-// event.emit("dbClick");
-
-
-```
-
-## 
-
-```javascript
-
-
-```
-
-## 
-
-
-
-```javascript
-
-
-
-```
-
-## 
-
-```javascript
-
-```
-
-### 实现Trim(去除字符串的首尾空格)
-
-```javascript
-//正则
-function myTrim1(str){
-    return str.replace(/^\s+|\s+$/g,'')
-}
-```
-
-### 
 
 
 
@@ -791,7 +298,6 @@ function myTrim1(str){
 ### 排序相关
 
 ```javascript
-
 
 /* 
 冒泡排序的方法
@@ -980,69 +486,7 @@ function shellSort(array) {
 
 ```
 
-## 数组转换为树形结构
-
-```javascript
-var list = [{
-        id: 1,
-        name: '部门A',
-        parentId: 0
-      },
-      {
-        id: 3,
-        name: '部门C',
-        parentId: 1
-      },
-      {
-        id: 4,
-        name: '部门D',
-        parentId: 1
-      },
-      {
-        id: 5,
-        name: '部门E',
-        parentId: 2
-      },
-      {
-        id: 6,
-        name: '部门F',
-        parentId: 3
-      },
-      {
-        id: 7,
-        name: '部门G',
-        parentId: 2
-      },
-      {
-        id: 8,
-        name: '部门H',
-        parentId: 4
-      },
-    ]
-
-    function convert(list) {
-      const map = list.reduce((acc, item) => {
-        acc[item.id] = item
-        return acc
-      }, {})
-      const result = []
-      for (const key in map) {
-        const item = map[key]
-        if (item.parentId === 0) {
-          result.push(item)
-        } else {
-          const parent = map[item.parentId]
-          if (parent) {
-            parent.children = parent.children || []
-            parent.children.push(item)
-          }
-        }
-      }
-      return result
-    }
-    var result = convert(list)
-    console.log(result)
-```
+## 
 
 # 2.原生API
 
@@ -1454,6 +898,27 @@ function flattenDeep(arr){
 }
 ```
 
+### 类数组转换为数组
+
+```javascript
+const arrayLike=document.querySelectorAll('div')
+
+// 1.扩展运算符
+[...arrayLike]
+// 2.Array.from
+Array.from(arrayLike)
+// 3.Array.prototype.slice
+Array.prototype.slice.call(arrayLike)
+// 4.Array.apply
+Array.apply(null, arrayLike)
+// 5.Array.prototype.concat
+Array.prototype.concat.apply([], arrayLike)
+
+
+```
+
+
+
 ### 函数柯里化
 
 ```javascript
@@ -1648,7 +1113,7 @@ format(1232323)  // '1,232,323'
 
 ### 非负大整数相加
 
-```
+```javascript
 function sumBigNumber(a, b) {
   let res = '';
   let temp = 0;
@@ -1676,5 +1141,333 @@ function sumBigNumber(a, b) {
 
 ```
 
+### 将数组里面的对象与数形结构相互转换
 
+```javascript
+// 转换前：
+source = [{
+            id: 1,
+            pid: 0,
+            name: 'body'
+          }, {
+            id: 2,
+            pid: 1,
+            name: 'title'
+          }, {
+            id: 3,
+            pid: 2,
+            name: 'div'
+          }]
+// 转换为: 
+tree = [{
+          id: 1,
+          pid: 0,
+          name: 'body',
+          children: [{
+            id: 2,
+            pid: 1,
+            name: 'title',
+            children: [{
+              id: 3,
+              pid: 1,
+              name: 'div'
+            }]
+          }
+        }]
+        
+        
+   function jsonToTree(data) {
+  // 初始化结果数组，并判断输入数据的格式
+  let result = []
+  if(!Array.isArray(data)) {
+    return result
+  }
+  // 使用map，将当前对象的id与当前对象对应存储起来
+  let map = {};
+  data.forEach(item => {
+    map[item.id] = item;
+  });
+  // 
+  data.forEach(item => {
+    let parent = map[item.pid];
+    if(parent) {
+      (parent.children || (parent.children = [])).push(item);
+    } else {
+      result.push(item);
+    }
+  });
+  return result;
+}
+
+
+//树形转列表
+function treeToList(data) {
+  let res = [];
+  const dfs = (tree) => {
+    tree.forEach((item) => {
+      if (item.children) {
+        dfs(item.children);
+        delete item.children;
+      }
+      res.push(item);
+    });
+  };
+  dfs(data);
+  return res;
+}
+
+
+```
+
+### 实现红绿灯
+
+```javascript
+function red() {
+    console.log('red');
+}
+function green() {
+    console.log('green');
+}
+function yellow() {
+    console.log('yellow');
+}
+
+const task = (timer, light) => 
+    new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (light === 'red') {
+                red()
+            }
+            else if (light === 'green') {
+                green()
+            }
+            else if (light === 'yellow') {
+                yellow()
+            }
+            resolve()
+        }, timer)
+    })
+const step = () => {
+    task(3000, 'red')
+        .then(() => task(2000, 'green'))
+        .then(() => task(2100, 'yellow'))
+        .then(step)
+}
+step()
+
+```
+
+### 每隔一秒打印1234
+
+```javascript
+// 使用闭包实现
+for (var i = 0; i < 5; i++) {
+  (function(i) {
+    setTimeout(function() {
+      console.log(i);
+    }, i * 1000);
+  })(i);
+}
+// 使用 let 块级作用域
+for (let i = 0; i < 5; i++) {
+  setTimeout(function() {
+    console.log(i);
+  }, i * 1000);
+}
+
+```
+
+### Promise 实现图片异步加载
+
+```javascript
+let imageAsync=(url)=>{
+            return new Promise((resolve,reject)=>{
+                let img = new Image();
+                img.src = url;
+                img.οnlοad=()=>{
+                    console.log(`图片请求成功，此处进行通用操作`);
+                    resolve(image);
+                }
+                img.οnerrοr=(err)=>{
+                    console.log(`失败，此处进行失败的通用操作`);
+                    reject(err);
+                }
+            })
+        }
+        
+imageAsync("url").then(()=>{
+    console.log("加载成功");
+}).catch((error)=>{
+    console.log("加载失败");
+})
+
+```
+
+### 带委托的通用事件监听函数
+
+```javascript
+/* 
+绑定事件监听的通用函数(带委托)
+*/
+function bindEvent2(ele, type, fn, selector) {
+
+  ele.addEventListener(type, event => {
+    // 得到发生事件的目标
+    const target = event.target
+    if (selector) {
+      // 如果元素被指定的选择器字符串选择, 返回true; 否则返回false。
+      if (target.matches(selector)) {
+        // 委托绑定调用
+        fn.call(target, event)
+      } 
+    } else {
+      // 普通绑定调用
+      fn.call(ele, event)
+      // fn(event) // this不对
+    }
+  })
+}
+
+
+<ul>
+   <span>
+    <li>
+    <li>
+</ul>
+    
+bindEvent2(ul, 'click', (event) => {}, 'li')
+bindEvent2(ul, 'click', (event) => {})
+```
+
+### 实现发布订阅模式
+
+```javascript
+class EventEmitter {
+  constructor() {
+    this.events = {};
+  }
+  // 实现订阅
+  on(type, callBack) {
+    if (!this.events[type]) {
+      this.events[type] = [callBack];
+    } else {
+      this.events[type].push(callBack);
+    }
+  }
+  // 删除订阅
+  off(type, callBack) {
+    if (!this.events[type]) return;
+    this.events[type] = this.events[type].filter((item) => {
+      return item !== callBack;
+    });
+  }
+  // 只执行一次订阅事件
+  once(type, callBack) {
+    function fn() {
+      callBack();
+      this.off(type, fn);
+    }
+    this.on(type, fn);
+  }
+  // 触发事件
+  emit(type, ...rest) {
+    this.events[type] &&
+      this.events[type].forEach((fn) => fn.apply(this, rest));
+  }
+}
+// 使用如下
+// const event = new EventEmitter();
+
+// const handle = (...rest) => {
+//   console.log(rest);
+// };
+
+// event.on("click", handle);
+
+// event.emit("click", 1, 2, 3, 4);
+
+// event.off("click", handle);
+
+// event.emit("click", 1, 2);
+
+// event.once("dbClick", () => {
+//   console.log(123456);
+// });
+// event.emit("dbClick");
+// event.emit("dbClick");
+```
+
+实现jsonP
+
+```javascript
+// 动态的加载js文件
+function addScript(src) {
+  const script = document.createElement('script');
+  script.src = src;
+  script.type = "text/javascript";
+  document.body.appendChild(script);
+}
+addScript("http://xxx.xxx.com/xxx.js?callback=handleRes");
+// 设置一个全局的callback函数来接收回调结果
+function handleRes(res) {
+  console.log(res);
+}
+// 接口返回的数据格式
+handleRes({a: 1, b: 2});
+
+```
+
+### setTimeout 实现 setInterval
+
+```javascript
+function myInterval(fn, time) {
+  let context = this;
+  setTimeout(() => {
+    fn.call(context);
+    myInterval(fn, time);
+  }, time);
+}
+```
+
+### 分片思想解决大量数据渲染问题
+
+```javascript
+let ul = document.getElementById("container");
+// 插入十万条数据
+let total = 100000;
+// 一次插入 20 条
+let once = 20;
+//总页数
+let page = total / once;
+//每条记录的索引
+let index = 0;
+//循环加载数据
+function loop(curTotal, curIndex) {
+  if (curTotal <= 0) {
+    return false;
+  }
+  //每页多少条
+  let pageCount = Math.min(curTotal, once);
+  window.requestAnimationFrame(function () {
+    for (let i = 0; i < pageCount; i++) {
+      let li = document.createElement("li");
+      li.innerText = curIndex + i + " : " + ~~(Math.random() * total);
+      ul.appendChild(li);
+    }
+    loop(curTotal - pageCount, curIndex + pageCount);
+  });
+}
+loop(total, index);
+
+```
+
+### LRU
+
+![image-20211129194433731](C:/Users/t1/AppData/Roaming/Typora/typora-user-images/image-20211129194433731.png)
+
+### ul里面生成，反转1000个li
+
+![image-20211129195759456](C:/Users/t1/AppData/Roaming/Typora/typora-user-images/image-20211129195759456.png)
+
+![image-20211129195814849](C:/Users/t1/AppData/Roaming/Typora/typora-user-images/image-20211129195814849.png)
 
