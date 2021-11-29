@@ -1,4 +1,8 @@
-### 手写promise
+# 1.Promise相关
+
+## 手写promise
+
+
 
 ```javascript
 
@@ -114,7 +118,9 @@ myPromise.prototype.then = function(onResolved, onRejected){
 }
 ```
 
-### 手写promise.all  promise.race  promise.or
+## 手写promise.all  .race   .or    .finally  .then  
+
+## 
 
 ```javascript
 
@@ -222,7 +228,9 @@ let p1 = Promise.reject(1);
         })
 ```
 
-### Promise 封装异步上传图片
+## Promise 封装异步上传图片
+
+
 
 ```javascript
 function loadImageAsync(url) {
@@ -239,9 +247,47 @@ function loadImageAsync(url) {
 }   
 ```
 
+![image-20211129180738993](C:/Users/t1/AppData/Roaming/Typora/typora-user-images/image-20211129180738993.png)
 
+​     
 
+## promise 封装ajax
 
+```javascript
+// promise 封装实现：
+function getJSON(url) {
+  // 创建一个 promise 对象
+  let promise = new Promise(function(resolve, reject) {
+    let xhr = new XMLHttpRequest();
+    // 新建一个 http 请求
+    xhr.open("GET", url, true);
+    // 设置状态的监听函数
+    xhr.onreadystatechange = function() {
+      if (this.readyState !== 4) return;
+      // 当请求成功或失败时，改变 promise 的状态
+      if (this.status === 200) {
+        resolve(this.response);
+      } else {
+        reject(new Error(this.statusText));
+      }
+    };
+    // 设置错误监听函数
+    xhr.onerror = function() {
+      reject(new Error(this.statusText));
+    };
+    // 设置响应的数据类型
+    xhr.responseType = "json";
+    // 设置请求头信息
+    xhr.setRequestHeader("Accept", "application/json");
+    // 发送 http 请求
+    xhr.send(null);
+  });
+  return promise;
+}
+
+```
+
+​                                        
 
 ### 手写Ajax
 
@@ -325,39 +371,19 @@ ajax(url, 'GET')
     .catch(err => console.error(err))
 ```
 
-## 节流与防抖
+## 
 
-​     在页面中如果持续触发一个事件会对性能不利，例如页面滚动、鼠标移动等若持续触发会造成事件冗余，也为页面加载带来负担。节流指的是函数在触发过了规定时间后再执行，若在规定时间内再次触发会重新计时， 再过规定时间后再执行。
+
 
 ``` javascript
 
-function throttle(fn, wait) {
-  let  pre = new Date();
-  return function() {
-    let context = this;
-    let args = arguments;
-    let now = new  Date();
-    if (now - pre >= wait) {
-      fn.apply(context, args);
-      pre = now;
-    }
-  }
-}
 
 ```
 
 防抖是在规定时间内只会触发一次，可以分为有时间戳和定时器两种。
 
 ``` javascript
-function debounce(fn, wait) {
-  let timeout = null;
-  return function() {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      fn.call(this, arguments);
-    }, wait);
-  }
-}
+
 ```
 
 ## 深拷贝
@@ -365,42 +391,6 @@ function debounce(fn, wait) {
 ``` javascript
 
 
-//深拷贝的实现,循环引用会出错
-function deepCope(object){
-    if(!object || typeof object !== 'object') return;
-    let newObject = Array.isArray(object) ? [] : {};
-    for(let k in object){
-        if(object.hasOwnProperty(k)){
-            newObject[k] = 
-                typeof object[k] === 'object' ? deepCope(object[k]) : object[k];
-        }
-    }
-    return newObject;
-}
-
-//解决了循环引用的问题
-function deepClone3(target, map = new Map()) {
-  const type = getType(target)
-  if (type==='Object' || type==='Array') {
-     // 从map容器取对应的clone对象
-    let cloneTarget = map.get(target)
-    // 如果有, 直接返回这个clone对象
-    if (cloneTarget) {
-      return cloneTarget
-    }
-    cloneTarget = type==='Array' ? [] : {}
-    // 将clone产生的对象保存到map容器
-    map.set(target, cloneTarget)
-    for (const key in target) {
-      if (target.hasOwnProperty(key)) {
-        cloneTarget[key] = deepClone3(target[key], map)
-      }
-    }
-    return cloneTarget
-  } else {
-    return target
-  }
-}
 ```
 
 ## 带委托的通用事件监听函数
@@ -448,159 +438,16 @@ bindEvent2(ul, 'click', (event) => {})
 
 
 
-## **手写call apply bind**
+## ****
 
 ``` javascript
-//手写call
-Function.prototype.myCall = function(context){
-    if(typeof this !== 'function'){
-        console.error('type error')
-    };
-    //获取参数
-    let args = [...arguments].slice(1),
-        result = null;
-    //判断context是否传入 若没传入则设为window
-    let  context = context || window;
-    //将函数的调用者设为对象的方法  
-    context.fn = this;
-    result = context.fn(...args);
-    delete context.fn;
-    return result;
-}
-//手写apply
-Function.prototype.myApply = function(context){
-    if(typeof this !== 'function') {
-        console.error('type error');
-    }
-    let result = null;
-    let context = context || window;
-    context.fn = this;
-    if(arguments[1]){
-        result = context.fn(...arguments[1]);
-    } else {
-        result = context.fn()
-    }
-    delete context.fn;
-    return result;
-}
-//手写bind
-Function.prototype.bind = function(context, ...args) {
-    // context为要改变的执行上下文
-    // ...args为传入bind函数的其余参数
-    return (...newArgs) => {
-        // 这里返回一个新的函数
-        // 通过调用call方法改变this指向并且把老参和新参一并传入
-        return this.call(context, ...args, ...newArgs);
-    }
-};
+
 ```
 
-### 函数柯里化
 
-函数柯里化是指将一种使用多个参数的函数转换为一系列单个参数函数的调用。
 
 ``` javascript
-//手写函数柯里化
-function curry(fn, args){
-    //获取函数需要的总参数长度
-    let leng = fn.length;
-    args = args || [];
-    return function(){
-        let subargs = args.slice(0);
-        for( let i = 0; i < arguments.length; i++){
-            subargs.push(arguments[i]);
-        }
-        //判断此时subargs是否已经满足函数需要的参数长度需求
-        if(subargs.length >= leng){
-            return fn.apply(this, subargs)
-        } else {
-            return curry.call(this, fn, subargs);
-        }
-    }
-}
-function fn(a,b,c){
-    return a+b+c;
-}
-var newCurry = curry(fn, 1);
-newCurry(2);
-newCurry(3);
 
-
-/* 
-柯理化函数含义：是给函数分步传递参数，每次传递部分参数，并返回一个更具体的函数接收剩下的参数，
-这中间可嵌套多层这样的接收部分参数的函数，直至返回最后结果。
-*/
-
-function add(a, b, c, d) {
-  return a + b + c + d;
-}
-
-function currying(fn, ...args) {
-  if (fn.length === args.length) {
-    return fn(...args);
-  } else {
-    return function (...newArgs) {
-      return currying(fn, ...args, ...newArgs);
-    }
-  }
-}
-
-let addSum = currying(add)(1,2);
-console.log(addSum(3)(4)); // 10
-
-//实现add()方法，使计算结果能够满足如下预期:    
-//add(1)(2)(3) = 6;    
-//add(1, 2, 3)(4) = 10;    
-//add(1)(2)(3)(4)(5) = 15;    
-function add() {
-	// 第一次执行时，定义一个数组专门用来存储所有的参数
-	let _args = Array.prototype.slice.call(arguments);
-
-	// 在内部声明一个函数，利用闭包的特性保存_args并收集所有的参数值
-	let _adder = function() {
-	    _args.push(...arguments);
-	    return _adder;
-	};
-
-	// 利用toString隐式转换的特性，当最后执行时隐式转换，并计算最终的值返回
-	_adder.toString = function () {
-	    return _args.reduce(function (a, b) {
-	        return a + b;
-	    });
-	}
-	return _adder;
-}
-
-
-/////////////
-function curry(fn, args) {
-    length = fn.length;
-    args = args || [];
-    return function() {
-        var _args = args.slice(0),
-            arg, i;
-        for (i = 0; i < arguments.length; i++) {
-            arg = arguments[i];
-            _args.push(arg);
-        }
-        if (_args.length < length) {
-            return curry.call(this, fn, _args);
-        }
-        else {
-            return fn.apply(this, _args);
-        }
-    }
-}
-
-
-var fn = curry(function(a, b, c) {
-    console.log([a, b, c]);
-});
-
-fn("a", "b", "c") // ["a", "b", "c"]
-fn("a", "b")("c") // ["a", "b", "c"]
-fn("a")("b")("c") // ["a", "b", "c"]
-fn("a")("b", "c") // ["a", "b", "c"]
 ```
 
 ### setTimeout 实现 setInterval
@@ -615,23 +462,10 @@ function myInterval(fn, time) {
 }
 ```
 
-### 封装一个 javascript 的类型判断函数
+### 
 
 ```javascript
-function typeof(value){
-    if(value === null){
-        return null + '';
-    }
-    if(typeof value === 'object'){
-        //如果为引用数据类型
-        let valueClass = Object.prototype.toString.call(value).split(' ')[1],
-            type = valueClass.split('');
-        type.pop();
-        return type.join('').toLowerCase();
-    } else {
-        return value;
-    }
-}
+
 ```
 
 ### 闭包实现每隔一秒打印 1,2,3,4
@@ -780,97 +614,12 @@ function lazyload() {
 
 
 
-### filter
+### 
+
+### 
 
 ``` JavaScript
-//返回一个包含  所有通过函数筛选   的元素所组成的数组
-Array.prototype.myFilter = function (fn, thisArr) {
-  if (this === undefined) {
-    throw new Error('this is null or not undefined')
-  }
-  if (Object.prototype.toString.call(fn) !== '[object Function]') {
-    throw new Error(fn + ' is not a function')
-  }
-  let filterArr = this
-  let filterRes = []
-  for (let i = 0; i < filterArr.length; i++) {
-    if (fn.call(thisArr, filterArr[i], i, filterArr)) {
-      filterRes.push(filterArr[i])
-    }
-  }
-  return filterRes
-}
-let arr = [1, 2, 3, 45, 6]
-let arr1 = arr.myFilter((item) => item >= 6)
-console.log(arr1)
 
-```
-
-### 数组降维,数组降维
-
-``` JavaScript
-//数组降维  去掉null 【】 和 undefined（字节笔试题）
-let arr = [
-    [
-        [
-            [
-                [0]
-            ],
-            [1]
-        ],
-        [
-            [
-                [2],
-                [3]
-            ]
-        ],
-        [
-            [4],
-            [5]
-        ]
-    ]
-];
-let arr2 = [
-    ['a', 'b'],
-    [0, ['a']],
-    [false],
-    []
-];
-let res = [1, 2, [3, 4, [10, 20, [100, 200]]], 5];
-Array.prototype.myFlatten = function() {
-    return this.reduce((pre, cur, index) => {
-        if (cur == undefined) return pre;
-        else {
-            return Array.isArray(cur) ? pre.concat(cur.myFlatten()) : pre.concat(cur);
-        }
-    }, [])
-}
-
-let array = arr.myFlatten();
-let array2 = arr2.myFlatten();
-let array3 = res.myFlatten();
-console.log(array);
-console.log(array2);
-console.log(array3);
-///////  另一种写法
-const myFlat = (arr) => {
-  let newArr = [];
-  let cycleArray = (arr) => {
-    for(let i = 0; i < arr.length; i++) {
-      let item = arr[i];
-      if (Array.isArray(item)) {
-        cycleArray(item);
-        continue;
-      } else {
-        newArr.push(item);
-      }
-    }
-  }
-  cycleArray(arr);
-  return newArr;
-}
-
-myFlat(arr); // [1, 2, 2, 3, 4, 5, 5, 6, 7, 8, 9, 11, 12, 12, 13, 14, 10]
 
 ```
 
@@ -916,54 +665,10 @@ function thousandth(str) {
 }
 ```
 
-### 数组去重
+### 
 
 ``` JavaScript
-/* 用不同的三种思想实现数组去重 */
-
-let arr = [12, 23, 12, 15, 25, 23, 16, 25, 16];
-
-/* 思想一：数组最后一项元素替换掉当前项元素，并删除最后一项元素 */
-
-let setToArr = (arr) => {
-  for (let i = 0; i < arr.length - 1; i++) {
-    let cur = arr[i]; // 获取当前项
-    let remainArr = arr.slice(i + 1); // 从i+1开始取（包括i+1），取数组后所有元素
-    let idx = remainArr.indexOf(cur); // 看从i+1开始是否含有与cur相同的元素
-    if (idx !== -1) {
-      arr[i] = arr[arr.length - 1]; // 把最后一项替换当前项
-      arr.length--; // 数组长度减1
-      i--; // 从当前项再次判断
-    }
-  }
-  return arr;
-}
-
-console.log(setToArr(arr)); // [ 16, 23, 12, 15, 25 ]
-
-/* 思想二：利用map键值对来进行去重操作，替换操作与思想一一致 */
-
-let setToArr2 = (arr) => {
-  let map = new Map();
-  for (let i = 0; i < arr.length; i++) {
-    let cur = arr[i];
-    if (map.has(cur)) {
-      arr[i] = arr[arr.length - 1];
-      arr.length--;
-      i--;
-    }
-    map.set(cur, true);
-  }
-  return arr;
-}
-console.log(setToArr2(arr)); // [ 16, 23, 12, 15, 25 ]
-
-/* 思想三：直接食用内置的 Set 去重 */
-
-let setToArr3 = (arr) => {
-  return [...new Set(arr)];
-}
-console.log(setToArr3(arr)); // [ 16, 23, 12, 15, 25 ]		
+	
 ```
 
 ### 实现sleep
@@ -1045,162 +750,27 @@ class EventEmitter {
 
 ```
 
-## 数组扁平化
+## 
 
 ```javascript
 
-//另一个版本  无误
-var flatten = function(arr) {
-  let res = [];
-  for (let i = 0; i < arr.length; i++) {
-    if (Array.isArray(arr[i])) {
-      res = res.concat(flatten(arr[i]))
-    } else {
-      res.push(arr[i])
-    }
-  }
-  return res;
-}
-console.log(flatten([1,[1,2,[2,4]],3,5]));  // [1, 1, 2, 2, 4, 3, 5]
-
-//扩展运算符(...)
-function flattenDeep(arr){
-	while(arr.some(item=>Array.isArray(item))){
-		arr=[].concat(...arr);
-	}
-	return arr;
-}
-//reduce() 
-function flattenDeep(arr){
-	return arr.reduce((prev, next)=>{
-		return prev.concat(Array.isArray(next) ? flattenDeep(next) : next);
-	},[])
-}
-```
-
-## 实现Instanceof
-
-```javascript
-/* 
-自定义instanceof工具函数: 
-  语法: myInstanceOf(obj, Type)
-  功能: 判断obj是否是Type类型的实例
-  实现: Type的原型对象是否是obj的原型链上的某个对象, 如果是返回true, 否则返回false
-*/
-function myInstanceOf(obj, Type) {
-  // 得到原型对象
-  let protoObj = obj.__proto__
-
-  // 只要原型对象存在
-  while(protoObj) {
-    // 如果原型对象是Type的原型对象, 返回true
-    if (protoObj === Type.prototype) {
-      return true
-    }
-    // 指定原型对象的原型对象
-    protoObj = protoObj.__proto__
-  }
-
-  return false
-}
-```
-
-### Map
-
-
-
-```javascript
-
-Array.prototype.map = function(fn) {
-    let newArray = [];
-    for (let i = 0; i < this.length; i++) {
-        newArray.push(fn(this[i]));
-    }
-    return newArray;
-}
-```
-
-#### 
-
-### Object.create
-
-```javascript
-Object.create() = function create(prototype) {
-  // 排除传入的对象是 null 和 非object的情况
-	if (prototype === null || typeof prototype !== 'object') {
-    throw new TypeError(`Object prototype may only be an Object: ${prototype}`);
-	}
-  // 让空对象的 __proto__指向 传进来的 对象(prototype)
-  // 目标 {}.__proto__ = prototype
-  function Temp() {};
-  Temp.prototype = prototype;
-  return new Temp;
-}
-
-
-//写法2
-function create(proto) {
-    function Fn() {};
-    Fn.prototype = proto;
-    Fn.prototype.constructor = Fn;
-    return new Fn();
-}
-let demo = {
-    c : '123'
-}
-let cc = Object.create(demo)
 
 ```
 
+## 
 
 
-### ES5实现数组reduce
 
 ```javascript
-Array.prototype.myReduce = function (callback, initialValue) {
-  const arr = this
-  let acc = typeof initialValue === 'undefined' ? arr[0] : initialValue
-  let startIndex = typeof initialValue === 'undefined' ? 1 : 0
-  for (let i = startIndex; i < arr.length; i++) {
-    let curr = arr[i]
-    acc = callback(acc, curr, i, arr)
-  }
-  return acc
-}
-
-let Arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-const sum = Arr.myReduce((pre, cur) => {
-  return pre + cur
-}, 10)
-console.log(sum)
 
 
 
 ```
 
-## 实现New
+## 
 
 ```javascript
-/* 
-自定义new工具函数
-  语法: newInstance(Fn, ...args)
-  功能: 创建Fn构造函数的实例对象
-  实现: 创建空对象obj, 调用Fn指定this为obj, 返回obj
-*/
-function newInstance(Fn, ...args) {
-  // 创建一个新的对象
-  const obj = {}
-  // 执行构造函数
-  const result = Fn.apply(obj, args) // 相当于: obj.Fn()
-  // 如果构造函数执行的结果是对象, 返回这个对象
-  if (result instanceof Object) {
-    return result
-  }
-  // 如果不是, 返回新创建的对象
-  obj.__proto__.constructor = Fn // 让原型对象的构造器属性指向Fn
-  
-  return obj
-}
+
 ```
 
 ### 实现Trim(去除字符串的首尾空格)
@@ -1212,17 +782,7 @@ function myTrim1(str){
 }
 ```
 
-### 数组乱序(洗牌算法)
-
-```javascript
-function shuffle(a) {
-    for (let i = a.length; i; i--) {
-        let j = Math.floor(Math.random() * i);
-        [a[i - 1], a[j]] = [a[j], a[i - 1]];
-    }
-    return a;
-}
-```
+### 
 
 
 
@@ -1420,12 +980,86 @@ function shellSort(array) {
 
 ```
 
+## 数组转换为树形结构
+
+```javascript
+var list = [{
+        id: 1,
+        name: '部门A',
+        parentId: 0
+      },
+      {
+        id: 3,
+        name: '部门C',
+        parentId: 1
+      },
+      {
+        id: 4,
+        name: '部门D',
+        parentId: 1
+      },
+      {
+        id: 5,
+        name: '部门E',
+        parentId: 2
+      },
+      {
+        id: 6,
+        name: '部门F',
+        parentId: 3
+      },
+      {
+        id: 7,
+        name: '部门G',
+        parentId: 2
+      },
+      {
+        id: 8,
+        name: '部门H',
+        parentId: 4
+      },
+    ]
+
+    function convert(list) {
+      const map = list.reduce((acc, item) => {
+        acc[item.id] = item
+        return acc
+      }, {})
+      const result = []
+      for (const key in map) {
+        const item = map[key]
+        if (item.parentId === 0) {
+          result.push(item)
+        } else {
+          const parent = map[item.parentId]
+          if (parent) {
+            parent.children = parent.children || []
+            parent.children.push(item)
+          }
+        }
+      }
+      return result
+    }
+    var result = convert(list)
+    console.log(result)
+```
+
+# 2.原生API
+
 ## 数组API
+
+
 
 #### Map
 
-```
-
+```javascript
+Array.prototype.map = function(fn) {
+    let newArray = [];
+    for (let i = 0; i < this.length; i++) {
+        newArray.push(fn(this[i]));
+    }
+    return newArray;
+}
 ```
 
 #### Filter
@@ -1561,6 +1195,484 @@ Array.prototype.myIncludes = function (searchElement, formIndex = 0) {
 }
 var str = 'Hello world, welcome to the Runoob。'
 console.log(str.includes('world'))
+
+```
+
+
+
+## 对象API
+
+#### instanceof
+
+```javascript
+/* 
+自定义instanceof工具函数: 
+  语法: myInstanceOf(obj, Type)
+  功能: 判断obj是否是Type类型的实例
+  实现: Type的原型对象是否是obj的原型链上的某个对象, 如果是返回true, 否则返回false
+*/
+function myInstanceOf(obj, Type) {
+  // 得到原型对象
+  let protoObj = obj.__proto__
+
+  // 只要原型对象存在
+  while(protoObj) {
+    // 如果原型对象是Type的原型对象, 返回true
+    if (protoObj === Type.prototype) {
+      return true
+    }
+    // 指定原型对象的原型对象
+    protoObj = protoObj.__proto__
+  }
+
+  return false
+}
+```
+
+#### Object.create
+
+```javascript
+Object.create() = function create(prototype) {
+  // 排除传入的对象是 null 和 非object的情况
+	if (prototype === null || typeof prototype !== 'object') {
+    throw new TypeError(`Object prototype may only be an Object: ${prototype}`);
+	}
+  // 让空对象的 __proto__指向 传进来的 对象(prototype)
+  // 目标 {}.__proto__ = prototype
+  function Temp() {};
+  Temp.prototype = prototype;
+  return new Temp;
+}
+
+
+//写法2
+function create(proto) {
+    function Fn() {};
+    Fn.prototype = proto;
+    Fn.prototype.constructor = Fn;
+    return new Fn();
+}
+let demo = {
+    c : '123'
+}
+let cc = Object.create(demo)
+
+```
+
+#### 实现New
+
+```javascript
+/* 
+自定义new工具函数
+  语法: newInstance(Fn, ...args)
+  功能: 创建Fn构造函数的实例对象
+  实现: 创建空对象obj, 调用Fn指定this为obj, 返回obj
+*/
+function newInstance(Fn, ...args) {
+  // 创建一个新的对象
+  const obj = {}
+  // 执行构造函数
+  const result = Fn.apply(obj, args) // 相当于: obj.Fn()
+  // 如果构造函数执行的结果是对象, 返回这个对象
+  if (result instanceof Object) {
+    return result
+  }
+  // 如果不是, 返回新创建的对象
+  obj.__proto__.constructor = Fn // 让原型对象的构造器属性指向Fn
+  
+  return obj
+}
+```
+
+#### typeof
+
+```javascript
+function typeof(value){
+    if(value === null){
+        return null + '';
+    }
+    if(typeof value === 'object'){
+        //如果为引用数据类型
+        let valueClass = Object.prototype.toString.call(value).split(' ')[1],
+            type = valueClass.split('');
+        type.pop();
+        return type.join('').toLowerCase();
+    } else {
+        return value;
+    }
+}
+```
+
+
+
+## 函数API
+
+#### call apply bind
+
+```javascript
+//手写call
+Function.prototype.myCall = function(context){
+    if(typeof this !== 'function'){
+        console.error('type error')
+    };
+    //获取参数
+    let args = [...arguments].slice(1),
+        result = null;
+    //判断context是否传入 若没传入则设为window
+    let  context = context || window;
+    //将函数的调用者设为对象的方法  
+    context.fn = this;
+    result = context.fn(...args);
+    delete context.fn;
+    return result;
+}
+//手写apply
+Function.prototype.myApply = function(context){
+    if(typeof this !== 'function') {
+        console.error('type error');
+    }
+    let result = null;
+    let context = context || window;
+    context.fn = this;
+    if(arguments[1]){
+        result = context.fn(...arguments[1]);
+    } else {
+        result = context.fn()
+    }
+    delete context.fn;
+    return result;
+}
+//手写bind
+Function.prototype.bind = function(context, ...args) {
+    // context为要改变的执行上下文
+    // ...args为传入bind函数的其余参数
+    return (...newArgs) => {
+        // 这里返回一个新的函数
+        // 通过调用call方法改变this指向并且把老参和新参一并传入
+        return this.call(context, ...args, ...newArgs);
+    }
+};
+```
+
+
+
+## 其他API
+
+# 3.数组,对象,函数操作
+
+### 数组乱序
+
+```javascript
+function shuffle(a) {
+    for (let i = a.length; i; i--) {
+        let j = Math.floor(Math.random() * i);
+        [a[i - 1], a[j]] = [a[j], a[i - 1]];
+    }
+    return a;
+}
+```
+
+### 数组去重
+
+```javascript
+/* 用不同的三种思想实现数组去重 */
+
+let arr = [12, 23, 12, 15, 25, 23, 16, 25, 16];
+
+/* 思想一：数组最后一项元素替换掉当前项元素，并删除最后一项元素 */
+
+let setToArr = (arr) => {
+  for (let i = 0; i < arr.length - 1; i++) {
+    let cur = arr[i]; // 获取当前项
+    let remainArr = arr.slice(i + 1); // 从i+1开始取（包括i+1），取数组后所有元素
+    let idx = remainArr.indexOf(cur); // 看从i+1开始是否含有与cur相同的元素
+    if (idx !== -1) {
+      arr[i] = arr[arr.length - 1]; // 把最后一项替换当前项
+      arr.length--; // 数组长度减1
+      i--; // 从当前项再次判断
+    }
+  }
+  return arr;
+}
+
+console.log(setToArr(arr)); // [ 16, 23, 12, 15, 25 ]
+
+/* 思想二：利用map键值对来进行去重操作，替换操作与思想一一致 */
+
+let setToArr2 = (arr) => {
+  let map = new Map();
+  for (let i = 0; i < arr.length; i++) {
+    let cur = arr[i];
+    if (map.has(cur)) {
+      arr[i] = arr[arr.length - 1];
+      arr.length--;
+      i--;
+    }
+    map.set(cur, true);
+  }
+  return arr;
+}
+console.log(setToArr2(arr)); // [ 16, 23, 12, 15, 25 ]
+
+/* 思想三：直接食用内置的 Set 去重 */
+
+let setToArr3 = (arr) => {
+  return [...new Set(arr)];
+}
+console.log(setToArr3(arr)); // [ 16, 23, 12, 15, 25 ]	
+```
+
+### 数组扁平化
+
+```javascript
+//另一个版本  无误
+var flatten = function(arr) {
+  let res = [];
+  for (let i = 0; i < arr.length; i++) {
+    if (Array.isArray(arr[i])) {
+      res = res.concat(flatten(arr[i]))
+    } else {
+      res.push(arr[i])
+    }
+  }
+  return res;
+}
+console.log(flatten([1,[1,2,[2,4]],3,5]));  // [1, 1, 2, 2, 4, 3, 5]
+
+//扩展运算符(...)
+function flattenDeep(arr){
+	while(arr.some(item=>Array.isArray(item))){
+		arr=[].concat(...arr);
+	}
+	return arr;
+}
+//reduce() 
+function flattenDeep(arr){
+	return arr.reduce((prev, next)=>{
+		return prev.concat(Array.isArray(next) ? flattenDeep(next) : next);
+	},[])
+}
+```
+
+### 函数柯里化
+
+```javascript
+//手写函数柯里化
+function curry(fn, args){
+    //获取函数需要的总参数长度
+    let leng = fn.length;
+    args = args || [];
+    return function(){
+        let subargs = args.slice(0);
+        for( let i = 0; i < arguments.length; i++){
+            subargs.push(arguments[i]);
+        }
+        //判断此时subargs是否已经满足函数需要的参数长度需求
+        if(subargs.length >= leng){
+            return fn.apply(this, subargs)
+        } else {
+            return curry.call(this, fn, subargs);
+        }
+    }
+}
+function fn(a,b,c){
+    return a+b+c;
+}
+var newCurry = curry(fn, 1);
+newCurry(2);
+newCurry(3);
+
+
+/* 
+柯理化函数含义：是给函数分步传递参数，每次传递部分参数，并返回一个更具体的函数接收剩下的参数，
+这中间可嵌套多层这样的接收部分参数的函数，直至返回最后结果。
+*/
+
+function add(a, b, c, d) {
+  return a + b + c + d;
+}
+
+function currying(fn, ...args) {
+  if (fn.length === args.length) {
+    return fn(...args);
+  } else {
+    return function (...newArgs) {
+      return currying(fn, ...args, ...newArgs);
+    }
+  }
+}
+
+let addSum = currying(add)(1,2);
+console.log(addSum(3)(4)); // 10
+
+//实现add()方法，使计算结果能够满足如下预期:    
+//add(1)(2)(3) = 6;    
+//add(1, 2, 3)(4) = 10;    
+//add(1)(2)(3)(4)(5) = 15;    
+function add() {
+	// 第一次执行时，定义一个数组专门用来存储所有的参数
+	let _args = Array.prototype.slice.call(arguments);
+
+	// 在内部声明一个函数，利用闭包的特性保存_args并收集所有的参数值
+	let _adder = function() {
+	    _args.push(...arguments);
+	    return _adder;
+	};
+
+	// 利用toString隐式转换的特性，当最后执行时隐式转换，并计算最终的值返回
+	_adder.toString = function () {
+	    return _args.reduce(function (a, b) {
+	        return a + b;
+	    });
+	}
+	return _adder;
+}
+
+
+/////////////
+function curry(fn, args) {
+    length = fn.length;
+    args = args || [];
+    return function() {
+        var _args = args.slice(0),
+            arg, i;
+        for (i = 0; i < arguments.length; i++) {
+            arg = arguments[i];
+            _args.push(arg);
+        }
+        if (_args.length < length) {
+            return curry.call(this, fn, _args);
+        }
+        else {
+            return fn.apply(this, _args);
+        }
+    }
+}
+
+
+var fn = curry(function(a, b, c) {
+    console.log([a, b, c]);
+});
+
+fn("a", "b", "c") // ["a", "b", "c"]
+fn("a", "b")("c") // ["a", "b", "c"]
+fn("a")("b")("c") // ["a", "b", "c"]
+fn("a")("b", "c") // ["a", "b", "c"]
+```
+
+### 对象深拷贝
+
+```javascript
+// 深拷贝的实现
+function deepCopy(object) {
+  if (!object || typeof object !== "object") return;
+
+  let newObject = Array.isArray(object) ? [] : {};
+
+  for (let key in object) {
+    if (object.hasOwnProperty(key)) {
+      newObject[key] =
+        typeof object[key] === "object" ? deepCopy(object[key]) : object[key];
+    }
+  }
+
+  return newObject;
+}
+
+```
+
+
+
+# 4.场景题
+
+### 节流防抖
+
+```javascript
+function throttle(fn, wait) {
+  let  pre = new Date();
+  return function() {
+    let context = this;
+    let args = arguments;
+    let now = new  Date();
+    if (now - pre >= wait) {
+      fn.apply(context, args);
+      pre = now;
+    }
+  }
+}
+
+//防抖
+function debounce(fn, wait) {
+  let timeout = null;
+  return function() {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      fn.call(this, arguments);
+    }, wait);
+  }
+}
+```
+
+### 字符串翻转
+
+```javascript
+String.prototype._reverse = function(a){
+    return a.split("").reverse().join("");
+}
+var obj = new String();
+var res = obj._reverse ('hello');
+console.log(res);    // olleh
+
+```
+
+### 数字千分位逗号分割
+
+```javascript
+let format = n => {
+    let num = n.toString() 
+    let len = num.length
+    if (len <= 3) {
+        return num
+    } else {
+        let remainder = len % 3
+        if (remainder > 0) { // 不是3的整数倍
+            return num.slice(0, remainder) + ',' + num.slice(remainder, len).match(/\d{3}/g).join(',') 
+        } else { // 是3的整数倍
+            return num.slice(0, len).match(/\d{3}/g).join(',') 
+        }
+    }
+}
+format(1232323)  // '1,232,323'
+
+```
+
+### 非负大整数相加
+
+```
+function sumBigNumber(a, b) {
+  let res = '';
+  let temp = 0;
+  
+  a = a.split('');
+  b = b.split('');
+  
+  while (a.length || b.length || temp) {
+    temp += ~~a.pop() + ~~b.pop();
+    res = (temp % 10) + res;
+    temp  = temp > 9
+  }
+  return res.replace(/^0+/, '');
+}
+如果想要对一个超大的整数(> Number.MAX_SAFE_INTEGER)进行加法运算，但是又想输出一般形式，那么使用 + 是无法达到的，一旦数字超过 Number.MAX_SAFE_INTEGER 数字会被立即转换为科学计数法，并且数字精度相比以前将会有误差。
+
+其主要的思路如下：
+
+首先用字符串的方式来保存大数，这样数字在数学表示上就不会发生变化
+初始化res，temp来保存中间的计算结果，并将两个字符串转化为数组，以便进行每一位的加法运算
+将两个数组的对应的位进行相加，两个数相加的结果可能大于10，所以可能要仅为，对10进行取余操作，将结果保存在当前位
+判断当前位是否大于9，也就是是否会进位，若是则将temp赋值为true，因为在加法运算中，true会自动隐式转化为1，以便于下一次相加
+重复上述操作，直至计算结束
+
 
 ```
 
